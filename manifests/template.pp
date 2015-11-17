@@ -47,11 +47,14 @@
 # * Richard Pijnenburg <mailto:richard.pijnenburg@elasticsearch.com>
 #
 define elasticsearch::template(
-  $ensure  = 'present',
-  $file    = undef,
-  $content = undef,
-  $host    = 'localhost',
-  $port    = 9200
+  $ensure    = 'present',
+  $file      = undef,
+  $content   = undef,
+  $host      = 'localhost',
+  $port      = 9200,
+  $use_https = false,
+  $user      = undef,
+  $password  = undef
 ) {
 
   require elasticsearch
@@ -73,7 +76,16 @@ define elasticsearch::template(
   }
 
   # Build up the url
-  $es_url = "http://${host}:${port}/_template/${name}"
+  $scheme = $use_https ? {
+    true  => "https",
+    false => "http"
+  }
+  if is_string($user) and is_string($password) {
+    $auth = "${user}:${password}@"
+  } else {
+    $auth = ""
+  }
+  $es_url = "${scheme}://${auth}${host}:${port}/_template/${name}"
 
   # Can't do a replace and delete at the same time
 
